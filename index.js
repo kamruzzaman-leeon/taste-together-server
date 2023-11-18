@@ -37,18 +37,18 @@ const logger = async (req, res, next) => {
 
 const verifyToken = async (req, res, next) => {
   const token = req.cookies?.token;
-  console.log('value of token in middleware',token)
+  console.log('value of token in middleware', token)
   if (!token) {
     return res.status(401).send({ message: 'Unauthorized' })
   }
-  jwt.verify(token,process.env.ACCESS_TOKEN_SECRET,(err,decoded)=>{
-      if(err){
-        console.log(err);
-        return res.status(403).send({message:'Forbidden'})
-      }
-      console.log('value in the token',decoded)
-      req.user =decoded;
-      next()
+  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
+    if (err) {
+      console.log(err);
+      return res.status(403).send({ message: 'Forbidden' })
+    }
+    console.log('value in the token', decoded)
+    req.user = decoded;
+    next()
   })
 }
 
