@@ -28,6 +28,22 @@ async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
+
+    // connect to Atlas cluste & collection
+    const FoodCollection = client.db('TasteTogetherDB').collection('food')
+
+    //data create
+    app.post('/food',async(req,res)=>{
+        const newFood =req.body;
+        console.log(newFood);
+        const result = await FoodCollection.insertOne(newFood);
+        res.send(result);
+    })
+
+    
+
+
+
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
