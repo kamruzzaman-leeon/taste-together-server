@@ -32,7 +32,7 @@ async function run() {
     // connect to Atlas cluste & collection
     const FoodCollection = client.db('TasteTogetherDB').collection('food')
 
-    //data create
+    //a new food data create
     app.post('/food',async(req,res)=>{
         const newFood =req.body;
         console.log(newFood);
@@ -40,6 +40,12 @@ async function run() {
         res.send(result);
     })
 
+    //all food data read
+    app.get('/food',async(req,res)=>{
+        const cursor = FoodCollection.find();
+        const result = await cursor.toArray();
+        res.send(result);
+    })
     
 
 
