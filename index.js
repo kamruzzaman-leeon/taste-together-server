@@ -16,7 +16,7 @@ app.use(cors({
 app.use(express.json());
 app.use(cookieParser())
 
-
+// console.log(process.env.ACCESS_TOKEN_SECRET)
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.jfba5ry.mongodb.net/?retryWrites=true&w=majority`;
 
@@ -30,20 +30,21 @@ const client = new MongoClient(uri, {
 });
 
 // middlewares
-const logger = async (req, res, next) => {
-  console.log('called', req.host, req.originalURL)
+const logger =  (req, res, next) => {
+  console.log('log: info', req.method, req.url)
   next();
 }
 
-const verifyToken = async (req, res, next) => {
-  const token = req.cookies?.token;
+
+const verifyToken = (req, res, next) => {
+  const token = req?.cookies?.token;
   console.log('value of token in middleware', token)
   if (!token) {
-    return res.status(401).send({ message: 'Unauthorized' })
+    return res.status(401).send({ message: 'Unauthorized Access' })
   }
   jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
     if (err) {
-      console.log(err);
+      // console.log(err);
       return res.status(403).send({ message: 'Forbidden' })
     }
     console.log('value in the token', decoded)
@@ -62,17 +63,23 @@ async function run() {
 
 
     //auth related api
-    app.post('/jwt', logger, verifyToken, async (req, res) => {
+    app.post('/jwt', logger, async (req, res) => {
       const user = req.body;
       console.log(user);
+      console.log('user for token', user);
       const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' })
-      res
-        .cookie('token', token, {
+      
+      res.cookie('token', token, {
           httpOnly: true,
           secure: false,
-          sameSite: false,
+          sameSite: 'None'
         })
         .send({ success: true });
+    })
+    app.post('/logout', async (req, res) => {
+      const user = req.body;
+      console.log('logging out', user)
+      res.clearCookie('token', { maxAge: 0 }).send({ success: true })
     })
 
     //a new food data create
