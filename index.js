@@ -105,7 +105,9 @@ async function run() {
 
     app.get('/fFood', async (req, res) => {
       const cursor = FoodCollection.find({fstatus:'available'});
+      cursor.sort({ fquantity: -1 });
       const result = await cursor.toArray();
+      // console.log(result)
       res.send(result);
     })
 
