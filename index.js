@@ -90,9 +90,21 @@ async function run() {
       res.send(result);
     })
 
-    //all food data read
-    app.get('/food', async (req, res) => {
+     //all food data read
+     app.get('/food', async (req, res) => {
       const cursor = FoodCollection.find();
+      const result = await cursor.toArray();
+      res.send(result);
+    })
+    //all food data read
+    app.get('/availablefood', async (req, res) => {
+      const cursor = FoodCollection.find({fstatus:'available'});
+      const result = await cursor.toArray();
+      res.send(result);
+    })
+
+    app.get('/fFood', async (req, res) => {
+      const cursor = FoodCollection.find({fstatus:'available'});
       const result = await cursor.toArray();
       res.send(result);
     })
