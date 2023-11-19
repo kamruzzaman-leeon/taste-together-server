@@ -1,6 +1,6 @@
 const express = require('express');
 const cors = require('cors');
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const jwt = require('jsonwebtoken');
 const cookieParser = require('cookie-parser');
 
@@ -96,6 +96,7 @@ async function run() {
       const result = await cursor.toArray();
       res.send(result);
     })
+
     //all food data read
     app.get('/availablefood', async (req, res) => {
       const cursor = FoodCollection.find({fstatus:'available'});
@@ -106,9 +107,17 @@ async function run() {
     app.get('/fFood', async (req, res) => {
       const cursor = FoodCollection.find({fstatus:'available'});
       cursor.sort({ fquantity: -1 });
-      const result = await cursor.toArray();
+      const result = await cursor.limit(6).toArray();
       // console.log(result)
       res.send(result);
+    })
+
+    app.get('/FoodDetails/:id',async(req,res)=>{
+      const id =req.params.id;
+      const query = {_id: new ObjectId(id)}
+      const result = await FoodCollection.findOne(query);
+      // console.log(result)
+      res.send(result)
     })
 
 
