@@ -104,7 +104,7 @@ async function run() {
       if(req.query?.email){
         query ={email: req.query.email}
       }
-      const result = await FoodCollection.find().toArray();
+      const result = await FoodCollection.find(query).toArray();
       console.log(result)
       res.send(result);
     })
