@@ -99,9 +99,13 @@ async function run() {
     })
 
     //all food data read
-    app.get('/food', async (req, res) => {
-      const cursor = FoodCollection.find();
-      const result = await cursor.toArray();
+    app.get('/food',verifyToken, async (req, res) => {
+      let query ={};
+      if(req.query?.email){
+        query ={email: req.query.email}
+      }
+      const result = await FoodCollection.find().toArray();
+      console.log(result)
       res.send(result);
     })
 
@@ -128,7 +132,7 @@ async function run() {
       res.send(result)
     })
 
-    app.post('/foodreq', async (req, res) => {
+    app.post('/foodreq',verifyToken, async (req, res) => {
       const newFoodreq = req.body;
       console.log(newFoodreq);
       const result = await FoodReqCollection.insertOne(newFoodreq);
