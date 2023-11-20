@@ -65,7 +65,7 @@ async function run() {
     // connect to Atlas cluste & collection
     const FoodCollection = client.db('TasteTogetherDB').collection('food')
     const FoodReqCollection = client.db('TasteTogetherDB').collection('foodreq')
-
+    const FoodBannerCollection = client.db('TasteTogetherDB').collection('banner')
 
     //auth related api
     app.post('/jwt', logger,  async (req, res) => {
@@ -104,6 +104,9 @@ async function run() {
       if(req.query?.email){
         query ={email: req.query.email}
       }
+      else if(req.query.search){
+        query = { fname: { $regex: new RegExp(req.query.search, 'i') } }
+      }
       const result = await FoodCollection.find(query).toArray();
       console.log(result)
       res.send(result);
@@ -139,6 +142,13 @@ async function run() {
       res.send({ success: true });
 
     })
+
+  //banner get
+  app.get('/banner',async(req,res)=>{
+    const cursor = FoodBannerCollection.find();
+    const result = await cursor.toArray();
+    res.send(result);
+  })
 
 
 
