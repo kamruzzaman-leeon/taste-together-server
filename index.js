@@ -48,11 +48,11 @@ const verifyToken = (req, res, next) => {
       console.log(err.message);
       return res.status(403).send({ message: 'Forbidden' });
     }
-    else{
+    else {
       console.log('value in the token', decoded)
       req.user = decoded;
     }
-    
+
     next()
   })
 }
@@ -68,25 +68,25 @@ async function run() {
     const FoodBannerCollection = client.db('TasteTogetherDB').collection('banner')
 
     //auth related api
-    app.post('/jwt', logger,  async (req, res) => {
+    app.post('/jwt', logger, async (req, res) => {
       const user = req.body;
       console.log(user);
       console.log('user for token', user);
       const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' })
-      console.log('token:',token)
+      console.log('token:', token)
       res
-      .cookie("token", token, {
-        httpOnly: true,
-        secure: false,
-        // sameSite: 'none'
-    
-        
-      })
-      .send({ success: true });
+        .cookie("token", token, {
+          httpOnly: true,
+          secure: false,
+          // sameSite: 'none'
+
+
+        })
+        .send({ success: true });
     })
     app.post('/logout', async (req, res) => {
       const user = req.body;
-      console.log('logging out', user)
+      // console.log('logging out', user)
       res.clearCookie('token', { maxAge: 0 }).send({ success: true })
     })
 
@@ -99,25 +99,86 @@ async function run() {
     })
 
     //all food data read
-    app.get('/food',verifyToken, async (req, res) => {
-      let query ={};
-      if(req.query?.email){
-        query ={email: req.query.email}
+    app.get('/food', verifyToken, async (req, res) => {
+      let query = {};
+      if (req.query?.email) {
+        query = { email: req.query.email }
       }
-      else if(req.query.search){
-        query = { fname: { $regex: new RegExp(req.query.search, 'i') } }
-      }
+
       const result = await FoodCollection.find(query).toArray();
       console.log(result)
       res.send(result);
     })
 
+    //food delete
+    app.delete('/deletefood/:foodid',async(req,res)=>{
+      const id =req.params.foodid;
+      console.log()
+      const result = await FoodCollection.deleteOne({_id:new ObjectId(id)})
+      res.send(result)
+    })
+
+    //food update
+    app.put('/updatefood/:foodid',async(req,res)=>{
+      const id =req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const options = { upsert: true };
+      const updateFood= req.body;
+      const food={
+        $set:{
+          donator:updateFood.donator,
+          email:updateFood.email,
+          photoURL:updateFood.photoURL,
+          fname:updateFood.fname,
+          fimage:updateFood.fimage,
+          fquantity:updateFood.fquantity,
+          fstatus:updateFood.fstatus,
+          fplocation:updateFood.fplocation,
+          Aditionalinfo:updateFood.Aditionalinfo,
+          fexpired:updateFood.fexpired
+        },
+      }
+      const result= await FoodCollection.updateOne(filter,food,options)
+      res.send(result)
+
+    })
+
     //all food data read
     app.get('/availablefood', async (req, res) => {
-      const cursor = FoodCollection.find({ fstatus: 'available' });
-      const result = await cursor.toArray();
-      res.send(result);
-    })
+      let query = {};
+    
+      // Condition 1: Both fname and fstatus are mandatory
+      if (req.query.fname) {
+        query = {
+          $and: [
+            { fname: { $regex: new RegExp(req.query.fname, 'i') } },
+            { fstatus: 'available' }
+          ]
+        };
+      }
+      // Condition 2: Only fstatus is mandatory, and sort by fexpired
+      // else if (req.query.fstatus) {
+      //   query = { fstatus: req.query.fstatus };
+      // }
+    
+      try {
+        let cursor = FoodCollection.find(query);
+    
+        // Condition 2: Sort by fexpired if present in the query
+        if (req.query.sort === 'asc') {
+          cursor = cursor.sort({ fexpired: 1 });
+        } else if (req.query.sort === 'desc') {
+          cursor = cursor.sort({ fexpired: -1 });
+        }
+    
+        const result = await cursor.toArray();
+        res.send(result);
+      } catch (error) {
+        console.error('Error fetching available food:', error);
+        res.status(500).send('Internal Server Error');
+      }
+    });
+
 
     app.get('/fFood', async (req, res) => {
       const cursor = FoodCollection.find({ fstatus: 'available' });
@@ -127,6 +188,7 @@ async function run() {
       res.send(result);
     })
 
+
     app.get('/FoodDetails/:id', async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) }
@@ -135,7 +197,7 @@ async function run() {
       res.send(result)
     })
 
-    app.post('/foodreq',verifyToken, async (req, res) => {
+    app.post('/foodreq', verifyToken, async (req, res) => {
       const newFoodreq = req.body;
       console.log(newFoodreq);
       const result = await FoodReqCollection.insertOne(newFoodreq);
@@ -143,12 +205,12 @@ async function run() {
 
     })
 
-  //banner get
-  app.get('/banner',async(req,res)=>{
-    const cursor = FoodBannerCollection.find();
-    const result = await cursor.toArray();
-    res.send(result);
-  })
+    //banner get
+    app.get('/banner', async (req, res) => {
+      const cursor = FoodBannerCollection.find();
+      const result = await cursor.toArray();
+      res.send(result);
+    })
 
 
 
