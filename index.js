@@ -121,6 +121,7 @@ async function run() {
     //food update
     app.put('/updatefood/:foodid',verifyToken, async(req,res)=>{
       const id =req.params.foodid;
+      console.log('this is' , id)
       const filter = { _id: new ObjectId(id) };
       const options = { upsert: true };
       const updateFood= req.body;
