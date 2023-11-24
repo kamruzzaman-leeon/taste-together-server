@@ -162,7 +162,7 @@ async function run() {
 
     //all food data read
     app.get('/availablefood', async (req, res) => {
-      let query = {};
+      let query = { fstatus: 'available' };
 
       // Condition 1: Both fname and fstatus are mandatory
       if (req.query.fname) {
