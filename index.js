@@ -111,35 +111,51 @@ async function run() {
     })
 
     //food delete
-    app.delete('/deletefood/:foodid',verifyToken, async(req,res)=>{
-      const id =req.params.foodid;
+    app.delete('/deletefood/:foodid', verifyToken, async (req, res) => {
+      const id = req.params.foodid;
       console.log()
-      const result = await FoodCollection.deleteOne({_id:new ObjectId(id)})
+      const result = await FoodCollection.deleteOne({ _id: new ObjectId(id) })
       res.send(result)
     })
 
     //food update
-    app.put('/updatefood/:foodid',verifyToken, async(req,res)=>{
-      const id =req.params.foodid;
-      console.log('this is' , id)
+    app.put('/updatefood/:foodid', verifyToken, async (req, res) => {
+      const id = req.params.foodid;
+      console.log('this is', id)
       const filter = { _id: new ObjectId(id) };
       const options = { upsert: true };
-      const updateFood= req.body;
-      const food={
-        $set:{
-          donator:updateFood.donator,
-          email:updateFood.email,
-          photoURL:updateFood.photoURL,
-          fname:updateFood.fname,
-          fimage:updateFood.fimage,
-          fquantity:updateFood.fquantity,
-          fstatus:updateFood.fstatus,
-          fplocation:updateFood.fplocation,
-          Aditionalinfo:updateFood.Aditionalinfo,
-          fexpired:updateFood.fexpired
+      const updateFood = req.body;
+      const food = {
+        $set: {
+          
+          fname: updateFood.fname,
+          fimage: updateFood.fimage,
+          fquantity: updateFood.fquantity,
+          fstatus: updateFood.fstatus,
+          fplocation: updateFood.fplocation,
+          Aditionalinfo: updateFood.Aditionalinfo,
+          fexpired: updateFood.fexpired
         },
       }
-      const result= await FoodCollection.updateOne(filter,food,options)
+      const result = await FoodCollection.updateOne(filter, food, options)
+      res.send(result)
+
+    })
+    app.put('/foodstatusupdate/:foodid', verifyToken, async (req, res) => {
+      const id = req.params.foodid;
+      console.log('this is', id)
+      const filter = { _id: new ObjectId(id) };
+      const options = { upsert: true };
+      const updateFood = req.body;
+      console.log(updateFood)
+      
+      const food = {
+        $set: {
+          fstatus: updateFood.fstatus,
+        },
+      };
+
+      const result = await FoodCollection.updateOne(filter, food, options)
       res.send(result)
 
     })
@@ -147,7 +163,7 @@ async function run() {
     //all food data read
     app.get('/availablefood', async (req, res) => {
       let query = {};
-    
+
       // Condition 1: Both fname and fstatus are mandatory
       if (req.query.fname) {
         query = {
@@ -161,17 +177,17 @@ async function run() {
       // else if (req.query.fstatus) {
       //   query = { fstatus: req.query.fstatus };
       // }
-    
+
       try {
         let cursor = FoodCollection.find(query);
-    
+
         // Condition 2: Sort by fexpired if present in the query
         if (req.query.sort === 'asc') {
           cursor = cursor.sort({ fexpired: 1 });
         } else if (req.query.sort === 'desc') {
           cursor = cursor.sort({ fexpired: -1 });
         }
-    
+
         const result = await cursor.toArray();
         res.send(result);
       } catch (error) {
@@ -204,6 +220,16 @@ async function run() {
       const result = await FoodReqCollection.insertOne(newFoodreq);
       res.send({ success: true });
 
+    })
+    app.get('/foodreq',verifyToken,async(req,res)=>{
+      let query = {};
+      if (req.query?.email) {
+        query = { email: req.query.email }
+      }
+
+      const result = await FoodCollection.find(query).toArray();
+      console.log(result)
+      res.send(result);
     })
 
     //banner get
