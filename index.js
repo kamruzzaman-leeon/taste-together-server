@@ -227,9 +227,15 @@ async function run() {
         query = { email: req.query.email }
       }
 
-      const result = await FoodCollection.find(query).toArray();
+      const result = await FoodReqCollection.find(query).toArray();
       console.log(result)
       res.send(result);
+    })
+    app.delete('/foodreq/:foodid', verifyToken, async (req, res) => {
+      const id = req.params.foodid;
+      console.log(id)
+      const result = await FoodReqCollection.deleteOne({ _id: new ObjectId(id) })
+      res.send(result)
     })
 
     //banner get
